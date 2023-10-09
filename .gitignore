@@ -1,0 +1,4 @@
+mlruns/*
+mlflow_example-artifacts:/*
+outputs/*
+catboost_info/*

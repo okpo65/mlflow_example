@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split, KFold
 
 class BaseModel(metaclass=ABCMeta):
     def __init__(self):
+        self.models = []
         pass
 
     def _train(self,
@@ -19,11 +20,10 @@ class BaseModel(metaclass=ABCMeta):
 
     def train(self, X: pd.DataFrame, y: pd.Series, fold: int):
 
-        models = []
         if fold == 1:
             X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.1, random_state=42)
             model = self._train(X_train, y_train, X_valid, y_valid)
-            models.append(model)
+            self.models.append(model)
 
         else:
             kf = KFold(n_splits=fold, shuffle=True, random_state=42)
@@ -33,9 +33,15 @@ class BaseModel(metaclass=ABCMeta):
                 y_train, y_valid = y[train_index], y[valid_index]
 
                 model = self._train(X_train, y_train, X_valid, y_valid)
-                models.append(model)
+                self.models.append(model)
 
-        return models
+        return self.models
+
+    def predict(self, X_test: pd.DataFrame):
+        predictions = []
+        for model in self.models:
+            predictions.append(model.predict_proba(X_test)[:, 1])
+        return predictions
 
 
 class CatBoostModel(BaseModel):
@@ -55,6 +61,6 @@ class CatBoostModel(BaseModel):
             X=X_train,
             y=y_train,
             eval_set=(X_valid, y_valid),
-            verbose=-1
+            verbose=0
         )
         return model
