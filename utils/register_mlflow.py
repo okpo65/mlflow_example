@@ -19,6 +19,10 @@ def register_models(models, model_type, uniq='', metrics=[]):
                 mlflow.catboost.log_model(model, run_name)
                 mlflow.log_metric(key="roc", value=metrics[fold])
 
+                params = model.get_params()
+                for key, value in params.items():
+                    mlflow.log_param(key=key, value=value)
+
             elif model_type == ModelType.auto_encoder:
                 mlflow.pytorch.log_model(model, run_name)
 
